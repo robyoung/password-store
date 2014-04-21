@@ -122,6 +122,21 @@ check_sneaky_paths() {
 		fi
 	done
 }
+combine_keyring() {
+	local error
+	if [[ "$GFSHARES" ]]; then
+		error=$(gfcombine -o ${GNUPGHOME:-~/.gnupg}/secring.gpg $GFSHARES 2>&1);
+		if [ $? = 1 ]; then
+			echo "Failed to combine kering: ${error}" 
+			exit 1
+		fi
+	fi
+}
+remove_keyring() {
+	if [[ "$GFSHARES" ]]; then
+		rm ${GNUPGHOME:-~/.gnupg}/secring.gpg
+	fi
+}
 
 #
 # END helper functions
@@ -321,7 +336,7 @@ cmd_show() {
 	check_sneaky_paths "$path"
 	if [[ -f $passfile ]]; then
 		if [[ $clip -eq 0 ]]; then
-			exec $GPG -d $GPG_OPTS "$passfile"
+			echo $($GPG -d $GPG_OPTS "$passfile")
 		else
 			local pass="$($GPG -d $GPG_OPTS "$passfile" | head -n 1)"
 			[[ -n $pass ]] || exit 1
@@ -628,6 +643,9 @@ cmd_git() {
 
 PROGRAM="${0##*/}"
 COMMAND="$1"
+
+trap remove_keyring EXIT
+combine_keyring || exit 1
 
 case "$1" in
 	init) shift;			cmd_init "$@" ;;
