@@ -134,6 +134,7 @@ combine_keyring() {
 }
 remove_keyring() {
 	if [[ "$GFSHARES" ]]; then
+		shred ${GNUPGHOME:-~/.gnupg}/secring.gpg
 		rm ${GNUPGHOME:-~/.gnupg}/secring.gpg
 	fi
 }
@@ -644,7 +645,7 @@ cmd_git() {
 PROGRAM="${0##*/}"
 COMMAND="$1"
 
-trap remove_keyring EXIT
+trap remove_keyring EXIT TERM INT
 combine_keyring || exit 1
 
 case "$1" in
