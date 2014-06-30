@@ -134,8 +134,8 @@ combine_keyring() {
 }
 remove_keyring() {
 	if [[ "$GFSHARES" ]]; then
-		shred ${GNUPGHOME:-~/.gnupg}/secring.gpg
-		rm ${GNUPGHOME:-~/.gnupg}/secring.gpg
+		$SHRED ${GNUPGHOME:-~/.gnupg}/secring.gpg
+		rm -f ${GNUPGHOME:-~/.gnupg}/secring.gpg
 	fi
 }
 
@@ -193,7 +193,10 @@ tmpdir() {
 GETOPT="getopt"
 SHRED="shred -f -z"
 
-source "$(dirname "$0")/platform/$(uname | cut -d _ -f 1 | tr '[:upper:]' '[:lower:]').sh" 2>/dev/null # PLATFORM_FUNCTION_FILE
+realpath() {
+  python -c "import os.path; print(os.path.realpath('$1'))"
+}
+source "$(dirname $(realpath "$0"))/platform/$(uname | cut -d _ -f 1 | tr '[:upper:]' '[:lower:]').sh" 2>/dev/null # PLATFORM_FUNCTION_FILE
 
 #
 # END platform definable
